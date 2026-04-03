@@ -76,6 +76,7 @@ This data source supports the following arguments:
 * `checksum_mode` - (Optional) To retrieve the object's checksum, this argument must be `ENABLED`. If you enable `checksum_mode` and the object is encrypted with KMS, you must have permission to use the `kms:Decrypt` action. Valid values: `ENABLED`
 * `download_body` - Set to `true` to always download object data to `body_base64` attribute. If unset and [conditions described above](#data-source-aws_s3_object) are met, `body` will be available but `body_base64` will not be. If set to `false`, the body is not downloaded and neither `body` nor `body_base64` is available, which may improve performance.
 * `key` - (Required) Full path to the object inside the bucket
+* `request_payer` - (Optional) Confirms that the requester knows that they will be charged for the request. Bucket owners need not specify this parameter in their requests. If included, the only valid value is `requester`.
 * `version_id` - (Optional) Specific version ID of the object returned (defaults to latest version)
 
 ## Attribute Reference

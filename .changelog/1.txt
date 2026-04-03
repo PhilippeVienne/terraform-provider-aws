@@ -1,0 +1,3 @@
+```release-note:enhancement
+data-source/aws_s3_object: Add `request_payer` argument
+```
