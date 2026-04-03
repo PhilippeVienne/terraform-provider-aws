@@ -151,6 +151,11 @@ func dataSourceObject() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"request_payer": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: enum.Validate[types.RequestPayer](),
+			},
 			"server_side_encryption": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -202,6 +207,9 @@ func dataSourceObjectRead(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 	if v, ok := d.GetOk("range"); ok {
 		input.Range = aws.String(v.(string))
+	}
+	if v, ok := d.GetOk("request_payer"); ok {
+		input.RequestPayer = types.RequestPayer(v.(string))
 	}
 	if v, ok := d.GetOk("version_id"); ok {
 		input.VersionId = aws.String(v.(string))
@@ -285,6 +293,9 @@ func dataSourceObjectRead(ctx context.Context, d *schema.ResourceData, meta any)
 		}
 		if v, ok := d.GetOk("range"); ok {
 			inputObjectDownload.Range = aws.String(v.(string))
+		}
+		if v, ok := d.GetOk("request_payer"); ok {
+			inputObjectDownload.RequestPayer = types.RequestPayer(v.(string))
 		}
 
 		_, err = downloader.Download(ctx, buf, &inputObjectDownload)
