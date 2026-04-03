@@ -1162,3 +1162,55 @@ output "body_base64" {
 }
 `, rName)
 }
+
+func TestAccS3ObjectDataSource_requestPayer(t *testing.T) {
+	ctx := acctest.Context(t)
+	rName := acctest.RandomWithPrefix(t, acctest.ResourcePrefix)
+	resourceName := "aws_s3_object.test"
+	dataSourceName := "data.aws_s3_object.test"
+
+	acctest.ParallelTest(ctx, t, resource.TestCase{
+		PreCheck:                  func() { acctest.PreCheck(ctx, t) },
+		ErrorCheck:                acctest.ErrorCheck(t, names.S3ServiceID),
+		ProtoV5ProviderFactories:  acctest.ProtoV5ProviderFactories,
+		PreventPostDestroyRefresh: true,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccObjectDataSourceConfig_requestPayer(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(dataSourceName, names.AttrBucket, resourceName, names.AttrBucket),
+					resource.TestCheckResourceAttrPair(dataSourceName, names.AttrKey, resourceName, names.AttrKey),
+					resource.TestCheckResourceAttr(dataSourceName, "request_payer", "requester"),
+					resource.TestCheckResourceAttr(dataSourceName, "content_length", "11"),
+				),
+			},
+		},
+	})
+}
+
+func testAccObjectDataSourceConfig_requestPayer(rName string) string {
+	return fmt.Sprintf(`
+resource "aws_s3_bucket" "test" {
+  bucket = %[1]q
+}
+
+resource "aws_s3_bucket_request_payment_configuration" "test" {
+  bucket = aws_s3_bucket.test.id
+  payer  = "Requester"
+}
+
+resource "aws_s3_object" "test" {
+  depends_on = [aws_s3_bucket_request_payment_configuration.test]
+
+  bucket  = aws_s3_bucket.test.bucket
+  key     = "%[1]s-key"
+  content = "Hello World"
+}
+
+data "aws_s3_object" "test" {
+  bucket        = aws_s3_bucket.test.bucket
+  key           = aws_s3_object.test.key
+  request_payer = "requester"
+}
+`, rName)
+}
